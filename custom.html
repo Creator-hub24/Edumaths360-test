@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Edumaths360 Custom Mock Test</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout concept: an exam paper on a desk. Left-aligned serif headings, a ledger for the marking scheme,
+   a ruled question card, and a palette of numbered tiles. Brass is the single accent. */
+:root{
+  --bg:#ECEEE8; --surface:#F7F8F3; --surface-2:#E2E6DD; --line:#C9D0C5;
+  --fg:#14231D; --muted:#56665D;
+  --brass:#B07F1E; --on-brass:#16130A; --brass-text:#7A530A; --brass-soft:#F0E5C6;
+  --ok:#1E7A4E; --bad:#B03E2C; --warn:#A8650A;
+  --serif:"Newsreader","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --sans:"Hanken Grotesk","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1511; --surface:#131E19; --surface-2:#1B2923; --line:#2B3B34;
+    --fg:#E8EEE7; --muted:#92A39A;
+    --brass:#D9B25F; --on-brass:#16130A; --brass-text:#E4C27A; --brass-soft:#2A2415;
+    --ok:#4FC38A; --bad:#E58470; --warn:#F0B04A;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1511; --surface:#131E19; --surface-2:#1B2923; --line:#2B3B34;
+  --fg:#E8EEE7; --muted:#92A39A;
+  --brass:#D9B25F; --on-brass:#16130A; --brass-text:#E4C27A; --brass-soft:#2A2415;
+  --ok:#4FC38A; --bad:#E58470; --warn:#F0B04A;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--fg);
+  font:16px/1.55 var(--sans);
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0 64px;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:760px;margin:0 auto}
+h1,h2,h3{margin:0;font-family:var(--serif);font-weight:500;text-wrap:balance}
+p{margin:0}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.eyebrow{font:500 .72rem/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--brass-text)}
+
+/* top bar */
+.bar{
+  position:sticky;top:env(safe-area-inset-top,0px);z-index:5;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 0 12px;background:var(--bg);border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.brand b{font:500 .8rem/1 var(--mono);letter-spacing:.18em;text-transform:uppercase}
+.brand span{font:400 .78rem/1 var(--mono);color:var(--muted);white-space:nowrap}
+.timer{
+  font:500 1.15rem/1 var(--mono);font-variant-numeric:tabular-nums;
+  padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);
+}
+.timer.warn{color:var(--warn);border-color:var(--warn)}
+.timer.low{color:var(--bad);border-color:var(--bad)}
+main{padding-top:28px;display:grid;gap:20px}
+
+/* buttons */
+.btn{
+  min-height:46px;padding:0 18px;border:1px solid var(--line);border-radius:10px;
+  background:var(--surface);color:var(--fg);font:600 .95rem/1 var(--sans);cursor:pointer;
+}
+.btn:hover{border-color:var(--fg)}
+.btn.primary{background:var(--brass);border-color:var(--brass);color:var(--on-brass)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent}
+.btn.big{min-height:52px;font-size:1.02rem;width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,.opt:focus-visible,.tile:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+
+/* start */
+.intro h1{font-size:clamp(2.3rem,8vw,3.6rem);line-height:1.02;letter-spacing:-.01em;margin:12px 0 14px}
+.lede{max-width:52ch;color:var(--muted);font-size:1.05rem}
+.ledger{display:grid;grid-template-columns:repeat(3,1fr);margin:26px 0 0;border-block:1px solid var(--line)}
+.ledger div{padding:14px 0 14px 16px;border-left:1px solid var(--line)}
+.ledger div:first-child{padding-left:0;border-left:0}
+.ledger dt{font:500 .7rem/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.ledger dd{margin:8px 0 0;font:500 2rem/1 var(--serif)}
+.ledger dd.ok{color:var(--ok)} .ledger dd.bad{color:var(--bad)}
+form.panel{display:grid;gap:8px}
+label{font-weight:600;font-size:.9rem}
+label .opt-note{font-weight:400;color:var(--muted);margin-left:6px}
+input[type=text]{
+  width:100%;min-height:48px;padding:0 14px;border:1px solid var(--line);border-radius:10px;
+  background:var(--bg);color:var(--fg);font:500 1rem var(--sans);margin-bottom:8px;
+}
+.err{color:var(--bad);font-size:.9rem}
+.rules{margin:4px 0 0;padding-left:1.1em;color:var(--muted);font-size:.92rem;display:grid;gap:4px}
+.best-line{font:400 .82rem/1.4 var(--mono);color:var(--muted);margin-top:4px}
+
+/* test */
+.qcard{padding:22px 20px}
+.qmeta{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px}
+.chip{font:500 .72rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:6px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+.flag{font:500 .72rem/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--warn)}
+.qtext{font-size:clamp(1.3rem,4.4vw,1.65rem);line-height:1.3;margin-bottom:18px}
+.opts{display:grid;gap:10px}
+.opt{
+  display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;align-items:center;text-align:left;
+  min-height:56px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;
+  background:var(--bg);color:var(--fg);font:500 1.02rem/1.35 var(--sans);cursor:pointer;
+}
+.opt:hover{border-color:var(--fg)}
+.letter{display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--line);border-radius:6px;font:500 .85rem var(--mono)}
+.opt.sel{border-color:var(--brass);background:var(--brass-soft)}
+.opt.sel .letter{background:var(--brass);border-color:var(--brass);color:var(--on-brass)}
+.qactions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.qactions .spacer{flex:1 1 20px}
+.pal h3{font-size:1.1rem;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:8px}
+.tile{
+  position:relative;min-height:46px;border:1px solid var(--line);border-radius:8px;
+  background:var(--bg);color:var(--fg);font:500 .95rem var(--mono);cursor:pointer;
+}
+.tile.ans{background:var(--brass-soft);border-color:var(--brass)}
+.tile.cur{outline:2px solid var(--fg);outline-offset:1px}
+.tile.mk::after{content:"";position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--warn)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:14px;font-size:.8rem;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border:1px solid var(--line);border-radius:3px;margin-right:6px;vertical-align:-2px;background:var(--bg)}
+.legend i.a{background:var(--brass-soft);border-color:var(--brass)}
+.legend i.m{background:var(--warn);border-color:var(--warn);border-radius:50%}
+.submit-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.confirm{display:grid;gap:12px}
+.confirm p{color:var(--muted)}
+.confirm .btns{display:flex;flex-wrap:wrap;gap:10px}
+
+/* result */
+.score-hero h1{font-size:clamp(4.5rem,22vw,8rem);line-height:.95;letter-spacing:-.02em;margin:10px 0 6px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.score-hero .of{font-size:clamp(1.6rem,6vw,2.4rem);color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media (min-width:640px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stat{padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.stat dt{font:500 .68rem/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.stat dd{margin:10px 0 0;font:500 2rem/1 var(--serif)}
+.stat small{display:block;margin-top:6px;font:400 .78rem var(--mono);color:var(--muted)}
+.stat-grid{margin:0;display:contents}
+.panel h2{font-size:1.4rem;margin-bottom:14px}
+.trow{display:grid;gap:6px;padding:10px 0;border-top:1px solid var(--line)}
+.trow:first-of-type{border-top:0;padding-top:0}
+.trow .top{display:flex;justify-content:space-between;gap:12px;font-weight:600}
+.trow .top span:last-child{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums}
+.meter{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.meter i{display:block;height:100%;border-radius:99px;background:var(--ok)}
+.meter i.low{background:var(--bad)}
+.qrow{display:grid;grid-template-columns:28px minmax(0,1fr) 52px 34px;gap:6px 12px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.qrow:first-of-type{border-top:0}
+.qrow .n{font:500 .85rem var(--mono);color:var(--muted)}
+.qrow .lab{font-size:.85rem;margin-bottom:4px}
+.qrow .t{font:400 .82rem var(--mono);text-align:right}
+.qrow .m{font:500 .85rem var(--mono);text-align:right}
+.m.p{color:var(--ok)} .m.q{color:var(--bad)} .m.z{color:var(--muted)}
+.save-status{font:400 .85rem/1.45 var(--mono);color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+textarea.copy-box{width:100%;min-height:150px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);font:400 .85rem/1.5 var(--mono)}
+
+/* review */
+.rv h2{font-size:1.35rem;line-height:1.3;margin:10px 0 14px}
+.rv-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.status{font:500 .75rem var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.status.ok{color:var(--ok)} .status.bad{color:var(--bad)} .status.skip{color:var(--muted)}
+.ropt{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);margin-bottom:8px}
+.ropt.right{border-color:var(--ok)}
+.ropt.wrong{border-color:var(--bad)}
+.ropt .tag{font:500 .72rem var(--mono);letter-spacing:.04em}
+.ropt.right .tag{color:var(--ok)} .ropt.wrong .tag{color:var(--bad)}
+.expl{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.expl b{display:block;font:500 .7rem/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--brass-text);margin-bottom:8px}
+@media (max-width:420px){
+  .brand span{display:none}
+  .ledger dd{font-size:1.6rem}
+}
+@media (prefers-reduced-motion:no-preference){
+  main>*{animation:rise .28s ease-out both}
+  @keyframes rise{from{opacity:.0;transform:translateY(6px)}to{opacity:1;transform:none}}
+}
+.cfg{display:grid;gap:16px}
+.cfgrow{display:grid;gap:8px}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.segbtn{min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);font:600 .9rem/1 var(--sans);cursor:pointer}
+.segbtn:hover:not(:disabled){border-color:var(--fg)}
+.segbtn.on{background:var(--brass);border-color:var(--brass);color:var(--on-brass)}
+.segbtn:disabled{opacity:.4;cursor:not-allowed}
+.segbtn:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+html,body{margin:0}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var BANK = [{"d": "Easy", "t": "Arithmetic", "q": "What is 20% of 450?", "o": ["80", "90", "100", "110"], "a": 1, "e": "20% of 450 = 0.2 × 450 = 90."}, {"d": "Easy", "t": "Arithmetic", "q": "What is the average of 12, 18, 24, 30 and 36?", "o": ["20", "22", "24", "26"], "a": 2, "e": "Sum = 120, and 120 ÷ 5 = 24."}, {"d": "Easy", "t": "Algebra", "q": "If 3x + 7 = 22, what is x?", "o": ["3", "4", "5", "6"], "a": 2, "e": "3x = 15, so x = 5."}, {"d": "Easy", "t": "Geometry", "q": "A square has an area of 64. What is its perimeter?", "o": ["16", "24", "32", "64"], "a": 2, "e": "Side = √64 = 8, so the perimeter is 4 × 8 = 32."}, {"d": "Easy", "t": "Number Theory", "q": "What is the HCF of 36 and 48?", "o": ["6", "12", "18", "24"], "a": 1, "e": "36 = 2²×3² and 48 = 2⁴×3, so HCF = 2²×3 = 12."}, {"d": "Easy", "t": "P&C", "q": "In how many ways can 4 different books be arranged on a shelf?", "o": ["12", "16", "24", "48"], "a": 2, "e": "4! = 4 × 3 × 2 × 1 = 24."}, {"d": "Easy", "t": "Arithmetic", "q": "What is the simple interest on ₹5,000 at 8% per annum for 3 years?", "o": ["₹1,000", "₹1,200", "₹1,250", "₹1,500"], "a": 1, "e": "SI = 5,000 × 8 × 3 ÷ 100 = ₹1,200."}, {"d": "Easy", "t": "Algebra", "q": "If x − y = 4 and x + y = 10, what is x?", "o": ["5", "6", "7", "8"], "a": 2, "e": "Adding the equations gives 2x = 14, so x = 7."}, {"d": "Easy", "t": "Geometry", "q": "What is the sum of the interior angles of a hexagon?", "o": ["540°", "720°", "900°", "1080°"], "a": 1, "e": "Sum = (n − 2) × 180° = 4 × 180° = 720°."}, {"d": "Easy", "t": "Number Theory", "q": "What is the remainder when 100 is divided by 7?", "o": ["1", "2", "3", "4"], "a": 1, "e": "7 × 14 = 98, so the remainder is 100 − 98 = 2."}, {"d": "Medium", "t": "Arithmetic", "q": "A price is increased by 20% and then decreased by 20%. What is the net change?", "o": ["No change", "4% decrease", "4% increase", "2% decrease"], "a": 1, "e": "1.2 × 0.8 = 0.96, which is a 4% decrease."}, {"d": "Medium", "t": "Arithmetic", "q": "Pipe A fills a tank in 10 hours and pipe B empties it in 15 hours. If both are open, how long does the tank take to fill?", "o": ["25 hours", "30 hours", "35 hours", "40 hours"], "a": 1, "e": "Net rate = 1/10 − 1/15 = 1/30 per hour, so it takes 30 hours."}, {"d": "Medium", "t": "Arithmetic", "q": "A 50 litre mixture has milk and water in the ratio 3 : 2. How many litres of water must be added to make the ratio 1 : 1?", "o": ["5", "10", "15", "20"], "a": 1, "e": "Milk = 30 L and water = 20 L. Adding 10 L of water makes both 30 L."}, {"d": "Medium", "t": "Algebra", "q": "If the roots of x² − 5x + 6 = 0 are p and q, what is p² + q²?", "o": ["11", "13", "15", "25"], "a": 1, "e": "p + q = 5 and pq = 6, so p² + q² = 25 − 12 = 13."}, {"d": "Medium", "t": "Algebra", "q": "If 2ˣ = 32 and 3ʸ = 81, what is x + y?", "o": ["7", "8", "9", "10"], "a": 2, "e": "x = 5 and y = 4, so x + y = 9."}, {"d": "Medium", "t": "Geometry", "q": "The diagonal of a square is 10√2. What is its area?", "o": ["50", "100", "100√2", "200"], "a": 1, "e": "Side = diagonal ÷ √2 = 10, so the area is 100."}, {"d": "Medium", "t": "Geometry", "q": "What is the area of a triangle with sides 13, 14 and 15?", "o": ["72", "84", "90", "96"], "a": 1, "e": "s = 21 and area = √(21 × 8 × 7 × 6) = √7056 = 84."}, {"d": "Medium", "t": "P&C", "q": "In how many ways can a committee of 3 be chosen from 6 people?", "o": ["15", "18", "20", "36"], "a": 2, "e": "C(6,3) = 6! ÷ (3! × 3!) = 20."}, {"d": "Medium", "t": "Number Theory", "q": "What is the last digit of 7²⁰²⁶?", "o": ["1", "3", "7", "9"], "a": 3, "e": "Last digits of powers of 7 repeat as 7, 9, 3, 1. Since 2026 leaves remainder 2 when divided by 4, the digit is 9."}, {"d": "Medium", "t": "Number Theory", "q": "How many positive divisors does 72 have?", "o": ["10", "12", "14", "16"], "a": 1, "e": "72 = 2³ × 3², so the divisors number (3 + 1)(2 + 1) = 12."}, {"d": "Hard", "t": "Arithmetic", "q": "A can finish a job in 20 days and B in 30 days. They start together, but A leaves 5 days before the job is completed. In how many days is the job finished?", "o": ["12", "15", "16", "18"], "a": 1, "e": "Let the job take T days. B works T days and A works T − 5 days: (T − 5)/20 + T/30 = 1, which gives T = 15."}, {"d": "Hard", "t": "Arithmetic", "q": "Alloy A has gold and silver in the ratio 1 : 2 and alloy B has them in the ratio 2 : 1. In what ratio (A : B) must they be mixed to get an alloy with gold and silver in the ratio 5 : 4?", "o": ["1 : 2", "2 : 1", "1 : 3", "3 : 2"], "a": 0, "e": "Gold fractions are 1/3 and 2/3 and the target is 5/9. By alligation, A : B = (2/3 − 5/9) : (5/9 − 1/3) = 1/9 : 2/9 = 1 : 2."}, {"d": "Hard", "t": "Arithmetic", "q": "A sells an article to B at a 10% loss. B sells it to C at a 20% gain. If C pays ₹5,940, what did A pay for the article?", "o": ["₹5,000", "₹5,400", "₹5,500", "₹5,600"], "a": 2, "e": "B's cost = 5,940 ÷ 1.2 = 4,950. A's cost = 4,950 ÷ 0.9 = ₹5,500."}, {"d": "Hard", "t": "Algebra", "q": "If a + b = 7 and ab = 10, what is a³ + b³?", "o": ["133", "143", "153", "163"], "a": 0, "e": "a³ + b³ = (a + b)³ − 3ab(a + b) = 343 − 210 = 133."}, {"d": "Hard", "t": "Algebra", "q": "If x² − 4x + 1 = 0, what is x³ + 1/x³?", "o": ["48", "52", "56", "64"], "a": 1, "e": "x + 1/x = 4, so x³ + 1/x³ = 4³ − 3 × 4 = 52."}, {"d": "Hard", "t": "Geometry", "q": "What is the area of a regular hexagon with side 2?", "o": ["6√3", "12√3", "4√3", "8√3"], "a": 0, "e": "A regular hexagon is six equilateral triangles of side 2, each of area √3. The total is 6√3."}, {"d": "Hard", "t": "P&C", "q": "How many 4-digit even numbers can be formed using the digits 1, 2, 3, 4, 5 without repetition?", "o": ["24", "36", "48", "60"], "a": 2, "e": "The last digit is 2 or 4 (2 ways), and the other three places take 4 × 3 × 2 ways: 2 × 24 = 48."}, {"d": "Hard", "t": "P&C", "q": "In how many distinct ways can the letters of MISSISSIPPI be arranged?", "o": ["34,650", "39,916,800", "4,989,600", "6,930"], "a": 0, "e": "11! ÷ (4! × 4! × 2!) = 34,650."}, {"d": "Hard", "t": "Number Theory", "q": "What is the remainder when 3¹⁰⁰ is divided by 5?", "o": ["1", "2", "3", "4"], "a": 0, "e": "Powers of 3 leave remainders 3, 4, 2, 1 in a cycle of 4. Since 100 is a multiple of 4, the remainder is 1."}, {"d": "Hard", "t": "Number Theory", "q": "How many trailing zeros does 50! have?", "o": ["10", "11", "12", "13"], "a": 2, "e": "Count factors of 5: ⌊50/5⌋ + ⌊50/25⌋ = 10 + 2 = 12."}];
+  var QUESTIONS = [];
+
+  var TOTAL_SEC = 20 * 60, PLUS = 3, MINUS = -1, LETTERS = ["A", "B", "C", "D"];
+  var DIFFS = ["Mixed", "Easy", "Medium", "Hard"], COUNTS = [5, 10, 15, 20];
+  function bestKey() { return "em360-custom-best|" + st.exam + "|" + st.diff + "|" + st.count; }
+
+  var app = document.getElementById("app");
+  var st = {
+    screen: "start", name: "", roll: "", nameErr: false, exam: "CAT Quant", diff: "Mixed", count: 10,
+    idx: 0, answers: [], marked: [], times: [], qStart: 0, startAt: 0, endAt: 0,
+    confirm: false, result: null, save: "", copyText: "", copied: false, focus: null
+  };
+  var timerId = null;
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function clock(s) { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ":" + pad(s % 60); }
+  function $(sel) { return app.querySelector(sel); }
+
+  function getBest() {
+    try { var v = localStorage.getItem(bestKey()); return v === null ? null : Number(v); } catch (e) { return null; }
+  }
+  function setBest(v) { try { localStorage.setItem(bestKey(), String(v)); } catch (e) {} }
+
+  /* ---------- scoring ---------- */
+  function computeResult(auto) {
+    var correct = 0, wrong = 0, skipped = 0, topics = {}, order = [], rows = [];
+    QUESTIONS.forEach(function (q, i) {
+      var a = st.answers[i], status, marks;
+      if (a === null) { status = "skip"; marks = 0; skipped++; }
+      else if (a === q.a) { status = "ok"; marks = PLUS; correct++; }
+      else { status = "bad"; marks = MINUS; wrong++; }
+      if (!topics[q.t]) { topics[q.t] = { right: 0, total: 0 }; order.push(q.t); }
+      topics[q.t].total++;
+      if (status === "ok") topics[q.t].right++;
+      rows.push({ topic: q.t, status: status, marks: marks, time: st.times[i] });
+    });
+    var attempted = correct + wrong;
+    return {
+      score: correct * PLUS + wrong * MINUS,
+      max: QUESTIONS.length * PLUS,
+      correct: correct, wrong: wrong, skipped: skipped,
+      accuracy: attempted ? Math.round((correct / attempted) * 100) : null,
+      topics: topics, order: order, rows: rows,
+      used: Math.min(TOTAL_SEC, (Date.now() - st.startAt) / 1000),
+      auto: !!auto
+    };
+  }
+
+  /* ---------- timer ---------- */
+  function remaining() { return Math.max(0, (st.endAt - Date.now()) / 1000); }
+  function tick() {
+    var left = remaining(), el = $("#timer");
+    if (el) {
+      el.textContent = clock(left);
+      el.className = "timer" + (left <= 60 ? " low" : left <= 300 ? " warn" : "");
+    }
+    if (left <= 0) submit(true);
+  }
+  function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
+  function addTime() {
+    var now = Date.now();
+    st.times[st.idx] += (now - st.qStart) / 1000;
+    st.qStart = now;
+  }
+
+  /* ---------- flow ---------- */
+  function begin() {
+    QUESTIONS = buildPaper(st.diff, st.count); TOTAL_SEC = QUESTIONS.length * 120;
+    var n = QUESTIONS.length;
+    st.answers = []; st.marked = []; st.times = [];
+    for (var i = 0; i < n; i++) { st.answers.push(null); st.marked.push(false); st.times.push(0); }
+    st.idx = 0; st.confirm = false; st.result = null; st.save = ""; st.copyText = ""; st.copied = false;
+    st.startAt = Date.now(); st.endAt = st.startAt + TOTAL_SEC * 1000; st.qStart = st.startAt;
+    st.screen = "test";
+    stopTimer(); timerId = setInterval(tick, 250);
+    render(); window.scrollTo(0, 0);
+  }
+  function go(i) {
+    if (i < 0 || i >= QUESTIONS.length) return;
+    addTime(); st.idx = i; st.confirm = false;
+    render(); window.scrollTo(0, 0);
+  }
+  function submit(auto) {
+    if (st.screen !== "test") return;
+    addTime(); stopTimer();
+    st.result = computeResult(auto);
+    var best = getBest();
+    st.result.newBest = best === null || st.result.score > best;
+    st.result.best = st.result.newBest ? st.result.score : best;
+    if (st.result.newBest) setBest(st.result.score);
+    st.screen = "result"; st.confirm = false; st.save = "saving";
+    render(); window.scrollTo(0, 0);
+    saveResult(st.result);
+  }
+
+  function payloadFor(r) {
+    var tb = {};
+    r.order.forEach(function (t) { tb[t] = r.topics[t].right + "/" + r.topics[t].total; });
+    return {
+      exam: paperLabel(), difficulty: st.diff, num_questions: QUESTIONS.length,
+      name: st.name, roll_number: st.roll,
+      score: r.score, correct: r.correct, wrong: r.wrong, skipped: r.skipped, accuracy: r.accuracy,
+      topic_breakdown: tb,
+      time_per_question: r.rows.map(function (x) { return Math.round(x.time); }),
+      answers: st.answers.map(function (a) { return a === null ? null : LETTERS[a]; }),
+      timestamp: new Date().toISOString()
+    };
+  }
+  function setSave(v) {
+    st.save = v;
+    var el = $("#save-status");
+    if (el) el.textContent = saveText();
+  }
+  function saveText() {
+    if (st.save === "saving") return "Saving your result…";
+    if (st.save === "saved") return "Result saved to the Edumaths360 records.";
+    return "This result is stored on this device only. Tap Copy result and send it to your teacher.";
+  }
+  var WEBHOOK_URL = "https://hook.eu1.make.com/bbhchs2o8ynkf0tyd21mv4w6d0mmb8p2";
+  function saveResult(r) {
+    var p = payloadFor(r);
+    p.topic_breakdown = JSON.stringify(p.topic_breakdown);
+    p.time_per_question = JSON.stringify(p.time_per_question);
+    p.answers = JSON.stringify(p.answers);
+    function viaForm() {
+      var body = new URLSearchParams();
+      Object.keys(p).forEach(function (k) { body.append(k, p[k] === null ? "" : String(p[k])); });
+      return fetch(WEBHOOK_URL, { method: "POST", mode: "no-cors", body: body });
+    }
+    fetch(WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(p)
+    }).then(function (res) {
+      setSave(res.ok ? "saved" : "local");
+    }).catch(function () {
+      viaForm().then(function () { setSave("saved"); }).catch(function () { setSave("local"); });
+    });
+  }
+
+  function resultText() {
+    var r = st.result;
+    var lines = [
+      "Edumaths360 · " + paperLabel(),
+      "Name: " + st.name + (st.roll ? " (Roll " + st.roll + ")" : ""),
+      "Score: " + r.score + "/" + r.max + " · Correct " + r.correct + " · Wrong " + r.wrong + " · Skipped " + r.skipped +
+        " · Accuracy " + (r.accuracy === null ? "n/a" : r.accuracy + "%"),
+      "Time used: " + clock(r.used) + " of " + clock(TOTAL_SEC),
+      "Topics: " + r.order.map(function (t) { return t + " " + r.topics[t].right + "/" + r.topics[t].total; }).join(", ")
+    ];
+    return lines.join("\n");
+  }
+  function copyResult() {
+    var text = resultText();
+    var done = function () { st.copied = true; st.copyText = ""; render(); };
+    var fallback = function () {
+      st.copyText = text; st.copied = false; render();
+      setTimeout(function () { var t = $("#copy-box"); if (t) { t.focus(); t.select(); } }, 0);
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+      else fallback();
+    } catch (e) { fallback(); }
+  }
+
+  /* ---------- paper builder ---------- */
+  function shuffle(a) {
+    a = a.slice();
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+  function poolSize(d) { return d === "Mixed" ? BANK.length : BANK.filter(function (q) { return q.d === d; }).length; }
+  function paperLabel() { return st.exam + " · " + st.diff + " · " + st.count + "Q"; }
+  function buildPaper(d, n) {
+    var picked;
+    if (d === "Mixed") {
+      var groups = ["Easy", "Medium", "Hard"].map(function (k) { return shuffle(BANK.filter(function (q) { return q.d === k; })); });
+      picked = [];
+      for (var r = 0; picked.length < n && r < 10; r++) {
+        for (var g = 0; g < groups.length && picked.length < n; g++) { if (groups[g][r]) picked.push(groups[g][r]); }
+      }
+    } else {
+      picked = shuffle(BANK.filter(function (q) { return q.d === d; })).slice(0, n);
+    }
+    return shuffle(picked).map(function (q) {
+      var order = shuffle([0, 1, 2, 3]);
+      return { t: q.t, d: q.d, q: q.q, e: q.e, o: order.map(function (k) { return q.o[k]; }), a: order.indexOf(q.a) };
+    });
+  }
+  function segment(key, values, current, labelFn, disabledFn) {
+    return '<div class="seg" role="group" aria-label="' + key + '">' + values.map(function (v) {
+      var on = v === current, dis = disabledFn && disabledFn(v);
+      return '<button type="button" class="segbtn' + (on ? ' on' : '') + '" data-act="cfg" data-key="' + key + '" data-val="' + esc(v) + '" aria-pressed="' + on + '"' + (dis ? ' disabled' : '') + '>' + esc(labelFn ? labelFn(v) : v) + '</button>';
+    }).join('') + '</div>';
+  }
+
+  /* ---------- views ---------- */
+  function viewStart() {
+    var best = getBest();
+    return '' +
+      '<section class="intro">' +
+        '<p class="eyebrow">Customised paper · Pilot</p>' +
+        '<h1>CAT Quant<br>Mock Test</h1>' +
+        '<p class="lede">' + st.count + ' questions · ' + st.diff + ' difficulty · ' + (st.count * 2) + ' minutes, one sitting.</p>' +
+        '<dl class="ledger">' +
+          '<div><dt>Correct</dt><dd class="ok">+3</dd></div>' +
+          '<div><dt>Wrong</dt><dd class="bad">−1</dd></div>' +
+          '<div><dt>Skipped</dt><dd>0</dd></div>' +
+        '</dl>' +
+      '</section>' +
+      '<section class="panel cfg">' +
+        '<div class="cfgrow"><span class="eyebrow">Exam</span>' + segment("exam", ["CAT Quant", "Bank", "CUET", "SSC", "IPMAT"], st.exam, function (v) { return v === "CAT Quant" ? v : v + " · soon"; }, function (v) { return v !== "CAT Quant"; }) + '</div>' +
+        '<div class="cfgrow"><span class="eyebrow">Difficulty</span>' + segment("diff", DIFFS, st.diff) + '</div>' +
+        '<div class="cfgrow"><span class="eyebrow">Questions</span>' + segment("count", COUNTS.map(String), String(st.count), null, function (v) { return Number(v) > poolSize(st.diff); }) + '</div>' +
+      '</section>' +
+      '<form id="start-form" class="panel" novalidate>' +
+        '<label for="f-name">Full name</label>' +
+        '<input type="text" id="f-name" autocomplete="name" value="' + esc(st.name) + '" placeholder="As it should appear on your result">' +
+        '<label for="f-roll">Roll number<span class="opt-note">optional</span></label>' +
+        '<input type="text" id="f-roll" autocomplete="off" value="' + esc(st.roll) + '" placeholder="e.g. CAT24-118">' +
+        '<p id="f-err" class="err" role="alert"' + (st.nameErr ? '' : ' hidden') + '>Enter your name to begin.</p>' +
+        '<button class="btn primary big" type="submit">Begin test</button>' +
+        (best !== null ? '<p class="best-line">Best on this device: ' + best + ' / ' + st.count * PLUS + '</p>' : '') +
+        '<ul class="rules">' +
+          '<li>Each paper is drawn at random from the question bank, so a retake can differ.</li>' +
+          '<li>Tap an option to answer. Use Clear to take it back.</li>' +
+          '<li>Mark a question for review and return to it from the palette.</li>' +
+          '<li>The paper submits itself when the clock reaches zero.</li>' +
+        '</ul>' +
+      '</form>';
+  }
+
+  function viewTest() {
+    var i = st.idx, q = QUESTIONS[i], sel = st.answers[i];
+    var answered = st.answers.filter(function (a) { return a !== null; }).length;
+    var markedN = st.marked.filter(Boolean).length;
+    var opts = q.o.map(function (text, k) {
+      var on = sel === k;
+      return '<button type="button" class="opt' + (on ? ' sel' : '') + '" role="radio" aria-checked="' + on +
+        '" data-act="pick" data-k="' + k + '" data-opt="' + k + '"><span class="letter">' + LETTERS[k] +
+        '</span><span>' + esc(text) + '</span></button>';
+    }).join('');
+    var tiles = QUESTIONS.map(function (_, j) {
+      var a = st.answers[j] !== null, m = st.marked[j];
+      return '<button type="button" class="tile' + (a ? ' ans' : '') + (j === i ? ' cur' : '') + (m ? ' mk' : '') +
+        '" data-act="go" data-i="' + j + '"' + (j === i ? ' aria-current="true"' : '') +
+        ' aria-label="Question ' + (j + 1) + (a ? ', answered' : ', not answered') + (m ? ', marked for review' : '') + '">' + (j + 1) + '</button>';
+    }).join('');
+    var submitBlock = st.confirm
+      ? '<section class="panel confirm" aria-live="polite">' +
+          '<h3>Submit the paper?</h3>' +
+          '<p>' + answered + ' answered · ' + (QUESTIONS.length - answered) + ' not answered' + (markedN ? ' · ' + markedN + ' marked for review' : '') + '. You cannot change answers after submitting.</p>' +
+          '<div class="btns"><button class="btn primary" data-act="submit" data-opt="submit">Submit now</button>' +
+          '<button class="btn" data-act="cancel">Keep working</button></div>' +
+        '</section>'
+      : '<div class="submit-row"><button class="btn primary" data-act="ask">Submit paper</button>' +
+        '<span class="muted mono" style="font-size:.82rem">' + answered + ' of ' + QUESTIONS.length + ' answered</span></div>';
+    return '' +
+      '<section class="panel qcard">' +
+        '<div class="qmeta"><span class="mono">Q' + (i + 1) + ' <span class="muted">of ' + QUESTIONS.length + '</span></span>' +
+          '<span class="chip">' + esc(q.t) + '</span>' +
+          (st.marked[i] ? '<span class="flag">Marked for review</span>' : '') + '</div>' +
+        '<h2 class="qtext">' + esc(q.q) + '</h2>' +
+        '<div class="opts" role="radiogroup" aria-label="Answer options">' + opts + '</div>' +
+        '<div class="qactions">' +
+          '<button class="btn" data-act="mark" data-opt="mark">' + (st.marked[i] ? 'Unmark review' : 'Mark for review') + '</button>' +
+          '<button class="btn ghost" data-act="clear" data-opt="clear"' + (sel === null ? ' disabled' : '') + '>Clear</button>' +
+          '<span class="spacer"></span>' +
+          '<button class="btn" data-act="prev"' + (i === 0 ? ' disabled' : '') + '>Previous</button>' +
+          '<button class="btn" data-act="next"' + (i === QUESTIONS.length - 1 ? ' disabled' : '') + '>Next</button>' +
+        '</div>' +
+      '</section>' +
+      '<section class="panel pal"><h3>Question palette</h3><div class="grid">' + tiles + '</div>' +
+        '<div class="legend"><span><i class="a"></i>Answered</span><span><i></i>Not answered</span><span><i class="m"></i>Marked</span></div>' +
+      '</section>' + submitBlock;
+  }
+
+  function viewResult() {
+    var r = st.result;
+    var topicRows = r.order.map(function (t) {
+      var s = r.topics[t], pct = Math.round((s.right / s.total) * 100);
+      return '<div class="trow"><div class="top"><span>' + esc(t) + '</span><span>' + s.right + '/' + s.total + ' · ' + pct + '%</span></div>' +
+        '<div class="meter" role="img" aria-label="' + esc(t) + ' ' + pct + ' percent correct"><i class="' + (pct < 60 ? 'low' : '') + '" style="width:' + pct + '%"></i></div></div>';
+    }).join('');
+    var maxT = Math.max.apply(null, r.rows.map(function (x) { return x.time; }).concat([1]));
+    var timeRows = r.rows.map(function (x, i) {
+      var w = Math.round((x.time / maxT) * 100);
+      var cls = x.status === "ok" ? "p" : x.status === "bad" ? "q" : "z";
+      var mk = x.marks > 0 ? "+" + x.marks : x.marks < 0 ? "−" + Math.abs(x.marks) : "0";
+      return '<div class="qrow"><span class="n">' + (i + 1) + '</span>' +
+        '<div><div class="lab">' + esc(x.topic) + '</div><div class="meter"><i class="' + (x.status === "bad" ? 'low' : '') + '" style="width:' + w + '%"></i></div></div>' +
+        '<span class="t">' + clock(x.time) + '</span><span class="m ' + cls + '">' + mk + '</span></div>';
+    }).join('');
+    var bestLine = r.newBest ? 'New best score on this device' : 'Best on this device: ' + r.best + ' / ' + r.max;
+    return '' +
+      '<section class="score-hero">' +
+        '<p class="eyebrow">' + (r.auto ? 'Time ran out · paper submitted' : 'Paper submitted') + '</p>' +
+        '<h1><span>' + r.score + '</span><span class="of">/ ' + r.max + '</span></h1>' +
+        '<p class="muted">' + esc(st.name) + (st.roll ? ' · Roll ' + esc(st.roll) : '') + '</p>' +
+        '<p class="best-line">' + bestLine + ' · Time used ' + clock(r.used) + ' of ' + clock(TOTAL_SEC) + '</p>' +
+      '</section>' +
+      '<dl class="stats">' +
+        '<div class="stat"><dt>Accuracy</dt><dd>' + (r.accuracy === null ? '—' : r.accuracy + '%') + '</dd><small>of attempted</small></div>' +
+        '<div class="stat"><dt>Correct</dt><dd>' + r.correct + '</dd><small>+' + r.correct * PLUS + '</small></div>' +
+        '<div class="stat"><dt>Wrong</dt><dd>' + r.wrong + '</dd><small>' + (r.wrong ? '−' + r.wrong : '0') + '</small></div>' +
+        '<div class="stat"><dt>Skipped</dt><dd>' + r.skipped + '</dd><small>not attempted</small></div>' +
+      '</dl>' +
+      '<section class="panel"><h2>By topic</h2>' + topicRows + '</section>' +
+      '<section class="panel"><h2>Time per question</h2>' + timeRows + '</section>' +
+      '<p class="save-status" id="save-status" role="status">' + saveText() + '</p>' +
+      '<div class="actions">' +
+        '<button class="btn primary" data-act="review">Review answers</button>' +
+        '<button class="btn" data-act="copy">' + (st.copied ? 'Copied' : 'Copy result') + '</button>' +
+        '<button class="btn ghost" data-act="retake">Retake</button>' +
+      '</div>' +
+      (st.copyText ? '<textarea class="copy-box" id="copy-box" readonly aria-label="Result text">' + esc(st.copyText) + '</textarea>' : '');
+  }
+
+  function viewReview() {
+    var cards = QUESTIONS.map(function (q, i) {
+      var a = st.answers[i], status = a === null ? "skip" : a === q.a ? "ok" : "bad";
+      var label = status === "ok" ? "Correct +3" : status === "bad" ? "Wrong −1" : "Skipped 0";
+      var opts = q.o.map(function (text, k) {
+        var cls = k === q.a ? " right" : (k === a ? " wrong" : "");
+        var tag = k === q.a ? "Correct" : (k === a ? "Your pick" : "");
+        return '<div class="ropt' + cls + '"><span class="letter">' + LETTERS[k] + '</span><span>' + esc(text) + '</span><span class="tag">' + tag + '</span></div>';
+      }).join('');
+      return '<section class="panel rv"><div class="rv-head"><span class="eyebrow">Q' + (i + 1) + ' · ' + esc(q.t) + '</span>' +
+        '<span class="status ' + status + '">' + label + '</span></div>' +
+        '<h2>' + esc(q.q) + '</h2>' + opts +
+        '<div class="expl"><b>Explanation</b><p>' + esc(q.e) + '</p></div></section>';
+    }).join('');
+    return '<div class="actions"><button class="btn" data-act="back">Back to score</button></div>' + cards +
+      '<div class="actions"><button class="btn primary" data-act="back">Back to score</button></div>';
+  }
+
+  function render() {
+    var body = st.screen === "start" ? viewStart() : st.screen === "test" ? viewTest() : st.screen === "result" ? viewResult() : viewReview();
+    var timer = st.screen === "test"
+      ? '<span class="timer" id="timer" role="timer" aria-label="Time left">' + clock(remaining()) + '</span>' : '';
+    var sub = st.screen === "test" ? paperLabel() : st.screen === "start" ? "Practice paper" : st.screen === "review" ? "Answer review" : "Result";
+    app.innerHTML =
+      '<header class="bar"><div class="brand"><b>Edumaths360</b><span>' + sub + '</span></div>' + timer + '</header>' +
+      '<main>' + body + '</main>';
+    if (st.screen === "test") tick();
+    if (st.focus) {
+      var f = $('[data-opt="' + st.focus + '"]');
+      if (f && !f.disabled) f.focus({ preventScroll: true });
+      st.focus = null;
+    }
+  }
+
+  /* ---------- events ---------- */
+  app.addEventListener("input", function (e) {
+    if (e.target.id === "f-name") { st.name = e.target.value; }
+    if (e.target.id === "f-roll") { st.roll = e.target.value; }
+  });
+  app.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (e.target.id !== "start-form") return;
+    st.name = (st.name || "").trim(); st.roll = (st.roll || "").trim();
+    if (!st.name) {
+      st.nameErr = true;
+      var err = $("#f-err"); if (err) err.hidden = false;
+      var n = $("#f-name"); if (n) n.focus();
+      return;
+    }
+    st.nameErr = false; begin();
+  });
+  app.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-act]");
+    if (!b || b.disabled) return;
+    var act = b.getAttribute("data-act"), i = st.idx;
+    if (act === "pick") { st.answers[i] = Number(b.getAttribute("data-k")); st.focus = String(st.answers[i]); render(); }
+    else if (act === "cfg") {
+      var key = b.getAttribute("data-key"), val = b.getAttribute("data-val");
+      if (key === "count") st.count = Number(val); else st[key] = val;
+      if (st.count > poolSize(st.diff)) st.count = poolSize(st.diff);
+      render();
+    }
+    else if (act === "clear") { st.answers[i] = null; st.focus = "mark"; render(); }
+    else if (act === "mark") { st.marked[i] = !st.marked[i]; st.focus = "mark"; render(); }
+    else if (act === "prev") go(i - 1);
+    else if (act === "next") go(i + 1);
+    else if (act === "go") go(Number(b.getAttribute("data-i")));
+    else if (act === "ask") { st.confirm = true; st.focus = "submit"; render(); }
+    else if (act === "cancel") { st.confirm = false; render(); }
+    else if (act === "submit") submit(false);
+    else if (act === "review") { st.screen = "review"; render(); window.scrollTo(0, 0); }
+    else if (act === "back") { st.screen = "result"; render(); window.scrollTo(0, 0); }
+    else if (act === "copy") copyResult();
+    else if (act === "retake") { st.screen = "start"; st.nameErr = false; render(); window.scrollTo(0, 0); }
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
